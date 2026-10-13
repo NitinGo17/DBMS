@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBMS Interactive Lab — Units I, II &amp; IV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ea; --surface:#fffdf9; --surface2:#faf7f0; --ink:#16202b; --ink2:#3c4a58; --dim:#6c7884;
+  --line:rgba(22,32,43,.13); --line2:rgba(22,32,43,.07);
+  --u1:#1d6fb8; --u1bg:#e8f1fb; --u2:#0f766e; --u2bg:#e1f1ec; --u4:#c2410c; --u4bg:#fbe8de;
+  --gold:#a9761c; --navy:#1e3a5f; --good:#157347; --goodbg:#e3f3e8; --bad:#b02a37; --badbg:#fbe3e4;
+  --shadow:0 1px 2px rgba(22,32,43,.05),0 10px 30px -16px rgba(22,32,43,.34); --r:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.6;
+  background-image:radial-gradient(1000px 460px at 94% -8%,rgba(15,118,110,.07),transparent 60%),radial-gradient(820px 420px at -6% 1%,rgba(29,111,184,.07),transparent 55%);
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:"Space Grotesk",system-ui,sans-serif;line-height:1.15;margin:0;letter-spacing:-.01em}
+svg text{font-family:"IBM Plex Sans",sans-serif} svg .m{font-family:"JetBrains Mono",monospace}
+.wrap{max-width:1020px;margin:0 auto;padding:22px 18px 90px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.nav{position:sticky;top:0;z-index:50;background:rgba(244,241,234,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .inner{max-width:1020px;margin:0 auto;padding:9px 16px;display:flex;gap:5px;align-items:center;overflow-x:auto}
+.nav a{white-space:nowrap;text-decoration:none;color:var(--ink2);font-size:12.5px;font-weight:500;padding:6px 10px;border-radius:9px}
+.nav a:hover{background:var(--surface);color:var(--ink)}
+.nav .brand{margin-right:auto;font-family:"Space Grotesk";font-weight:700;font-size:13.5px;color:var(--navy);padding-left:0}
+
+.hero{background:linear-gradient(180deg,#fffefb,#faf7f0);border:1px solid var(--line);border-radius:22px;padding:32px 30px;box-shadow:var(--shadow);position:relative;overflow:hidden;margin-bottom:24px}
+.hero:before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--u1),var(--u2),var(--u4))}
+.kicker{font-family:"JetBrains Mono";font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--u4);font-weight:600}
+.hero h1{font-size:clamp(29px,4.2vw,44px);margin:8px 0 10px;font-weight:700}
+.hero p{margin:0;color:var(--ink2);max-width:64ch}
+.hero .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.chip{font-family:"JetBrains Mono";font-size:11.5px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink2)}
+.chip b{color:var(--ink)}
+
+.sec-head{display:flex;align-items:center;gap:13px;margin:34px 0 14px}
+.sec-head .num{font-family:"JetBrains Mono";font-size:12px;font-weight:600;color:#fff;background:var(--navy);width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none}
+.sec-head h2{font-size:clamp(21px,3vw,29px);font-weight:700}
+.unitbar{border-radius:20px;padding:20px 24px;margin:34px 0 2px;border:1px solid var(--line);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.unitbar .tag{font-family:"JetBrains Mono";font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+.unitbar h2{font-size:clamp(22px,3.1vw,31px);margin:5px 0 4px;font-weight:700}
+.unitbar p{margin:0;font-size:15px}
+.u1c{background:linear-gradient(120deg,var(--u1bg),#fbfdff)} .u1c .tag,.u1c h2{color:var(--u1)} .u1c:after{background:var(--u1)}
+.u2c{background:linear-gradient(120deg,var(--u2bg),#fbfefd)} .u2c .tag,.u2c h2{color:var(--u2)} .u2c:after{background:var(--u2)}
+.u4c{background:linear-gradient(120deg,var(--u4bg),#fffbf8)} .u4c .tag,.u4c h2{color:var(--u4)} .u4c:after{background:var(--u4)}
+.unitbar:after{content:"";position:absolute;inset:0 auto 0 0;width:6px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow);margin:14px 0}
+.card h3{font-size:19px;font-weight:700;margin-bottom:4px}
+.card h4{font-size:15.5px;font-weight:700;margin:14px 0 4px}
+.card p{margin:8px 0}
+.lead{color:var(--ink2)}
+.muted{color:var(--dim);font-size:14px}
+.hint{font-size:13px;color:var(--u4);font-family:"JetBrains Mono";letter-spacing:.02em}
+
+.stage{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0;overflow-x:auto;position:relative}
+.stage .cap{font-family:"JetBrains Mono";font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+svg.d{display:block;width:100%;height:auto;min-width:520px}
+svg.d.wide{min-width:660px}
+
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0}
+.btn{font-family:"IBM Plex Sans";font-weight:600;font-size:13.5px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);padding:9px 14px;cursor:pointer;transition:all .15s}
+.btn:hover{border-color:var(--navy);transform:translateY(-1px)}
+.btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn.sm{padding:6px 11px;font-size:12.5px}
+
+.tw{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:360px;font-size:14.5px;background:var(--surface)}
+th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line2)}
+th{background:var(--surface2);font-family:"JetBrains Mono";font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);font-weight:600}
+tr:last-child td{border-bottom:none}
+td code,th code{font-family:"JetBrains Mono";font-size:13px}
+table.hl tbody tr{transition:background .15s}
+table.hl tbody tr:hover{background:#fff8ee}
+td.kcell{cursor:pointer}
+.cellgood{background:var(--goodbg)!important} .cellbad{background:var(--badbg)!important}
+.cellkey{background:#fdf2d8!important;font-weight:700}
+
+pre{margin:10px 0;background:#1b2534;color:#e8eef6;border-radius:11px;padding:14px 16px;overflow-x:auto;font-family:"JetBrains Mono";font-size:13px;line-height:1.6}
+pre .kw{color:#f0a868} pre .str{color:#8fd6a6} pre .cmt{color:#8aa0b8}
+code.inl{font-family:"JetBrains Mono";font-size:13.5px;background:var(--surface2);border:1px solid var(--line2);padding:1px 6px;border-radius:6px}
+
+.callout{border-radius:12px;padding:13px 15px;margin:13px 0;font-size:14.5px;border:1px solid var(--line)}
+.callout b{display:block;font-family:"JetBrains Mono";font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+.tip{background:var(--goodbg);border-color:rgba(21,115,71,.25)} .tip b{color:var(--good)}
+.trap{background:var(--badbg);border-color:rgba(176,42,55,.25)} .trap b{color:var(--bad)}
+.note{background:var(--u1bg);border-color:rgba(29,111,184,.22)} .note b{color:var(--u1)}
+.mem{background:#fbf3df;border-color:rgba(169,118,28,.28)} .mem b{color:var(--gold)}
+
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+@media (max-width:820px){.grid3,.grid4{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:15px;box-shadow:var(--shadow);cursor:pointer;transition:all .16s}
+.tile:hover{transform:translateY(-3px);border-color:var(--navy)}
+.tile.on{border-color:var(--navy);background:#fff}
+.tile h4{margin:0 0 2px;font-size:15px}
+.tile .sub{font-size:12.5px;color:var(--dim)}
+
+/* interactive panel */
+.panel{margin-top:12px;border:1px dashed var(--line);border-radius:12px;padding:14px;background:var(--surface2);min-height:60px;font-size:14.5px}
+.panel b{color:var(--ink)}
+.fade{animation:fade .35s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* request-flow animation */
+.flowstage{position:relative;height:320px}
+.pkt{position:absolute;left:50%;top:0;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:var(--u4);box-shadow:0 0 0 5px rgba(194,65,12,.18);transition:top .8s cubic-bezier(.5,0,.4,1)}
+.node{position:absolute;left:50%;transform:translateX(-50%);width:340px;border-radius:13px;border:2px solid var(--line);background:#fff;padding:12px 14px;text-align:center;transition:all .3s}
+.node.act{border-color:var(--u4);box-shadow:0 8px 22px -10px rgba(194,65,12,.6)}
+.node b{display:block;font-family:"Space Grotesk";font-size:15px}
+.node small{color:var(--dim);font-size:12px}
+.status{text-align:center;font-family:"JetBrains Mono";font-size:12.5px;color:var(--u4);margin-top:10px;min-height:18px}
+
+/* checklist */
+.clgroup{margin:14px 0}
+.clgroup h4{font-family:"JetBrains Mono";font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.cl{display:flex;align-items:flex-start;gap:11px;padding:9px 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface);margin-bottom:7px;cursor:pointer;transition:all .14s;font-size:14.5px}
+.cl:hover{border-color:var(--navy)}
+.cl.on{background:var(--goodbg);border-color:rgba(21,115,71,.3)}
+.cl .bx{width:21px;height:21px;border-radius:6px;border:2px solid var(--line);flex:none;display:grid;place-items:center;color:#fff;font-size:12px;margin-top:1px}
+.cl.on .bx{background:var(--good);border-color:var(--good)}
+.pbar{height:10px;background:var(--line2);border-radius:10px;overflow:hidden;margin:10px 0}
+.pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--u1),var(--u2));transition:width .4s}
+
+/* quiz */
+.q{border:1px solid var(--line);border-radius:13px;padding:15px;margin:11px 0;background:var(--surface)}
+.q .qn{font-family:"JetBrains Mono";font-size:11px;color:var(--dim);font-weight:600}
+.q .qt{font-weight:600;margin:2px 0 9px;font-size:15px}
+.opts{display:grid;gap:7px}
+.opt{text-align:left;border:1.5px solid var(--line);background:var(--surface2);border-radius:10px;padding:9px 12px;cursor:pointer;font-family:"IBM Plex Sans";font-size:14px;color:var(--ink);transition:all .14s;display:flex;gap:9px;align-items:center}
+.opt:hover:not(.lock){border-color:var(--navy);background:#fff}
+.opt .k{font-family:"JetBrains Mono";font-size:12px;font-weight:600;width:21px;height:21px;border-radius:6px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.opt.ok{border-color:var(--good);background:var(--goodbg)} .opt.ok .k{background:var(--good);color:#fff}
+.opt.no{border-color:var(--bad);background:var(--badbg)} .opt.no .k{background:var(--bad);color:#fff}
+.opt.lock{cursor:default}
+.qfb{margin-top:9px;font-size:13.5px;padding:10px 12px;border-radius:10px;display:none}
+.qfb.on{display:block}
+.qfb.ok{background:var(--goodbg)} .qfb.no{background:var(--badbg)}
+.scorebox{text-align:center;padding:14px;border-radius:13px;background:var(--surface);border:1px solid var(--line);margin:14px 0}
+.scorebox .big{font-family:"Space Grotesk";font-size:38px;font-weight:700;line-height:1}
+.foot{margin-top:34px;text-align:center;color:var(--dim);font-size:12.5px;line-height:1.7}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="inner">
+  <span class="brand">DBMS Interactive Lab</span>
+  <a href="#road">Overview</a><a href="#u1">Unit I</a><a href="#u2">Unit II</a><a href="#u4">Unit IV</a>
+  <a href="#checklist">Checklist</a><a href="#exam">Exam</a><a href="#quiz">Quiz</a><a href="#papers">Papers</a>
+</div></nav>
+
+<div class="wrap">
+  <header class="hero">
+    <span class="kicker">BCA-501 · Units I, II &amp; IV · Mid-term tomorrow</span>
+    <h1>DBMS Interactive Lab</h1>
+    <p>Every concept has a picture you can play with — animate a query, change a schema and watch what breaks, run a relational-algebra operation, or switch a JOIN and see the rows change. Learn it by doing it, then tick the checklist and sit a full paper on pen and paper.</p>
+    <div class="meta">
+      <span class="chip">Unit I · <b>foundation</b></span>
+      <span class="chip">Unit II · <b>diagrams</b></span>
+      <span class="chip">Unit IV · <b>queries</b></span>
+      <span class="chip">3 predicted papers · <b>printable</b></span>
+    </div>
+  </header>
+
+  <!-- ROADMAP -->
+  <section id="road">
+    <div class="sec-head"><span class="num">1</span><h2>The whole subject, as one flow</h2></div>
+    <div class="card">
+      <p class="lead">The three units are three stages of one project: a college management system. Hover the boxes; the flow animates on load.</p>
+      <div class="stage">
+        <div class="cap">Click any stage to highlight its job</div>
+        <svg class="d wide" id="roadmap" viewBox="0 0 820 360" role="img" aria-label="Roadmap from college management system through units to a working database">
+          <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#6c7884"/></marker></defs>
+          <rect class="rs" data-r="0" x="290" y="14" width="240" height="56" rx="14" fill="#e8f1fb" stroke="#1d6fb8" stroke-width="2"/>
+          <text x="410" y="48" text-anchor="middle" font-size="16" font-weight="700" fill="#1d6fb8">College Management System</text>
+          <line x1="410" y1="70" x2="410" y2="100" stroke="#6c7884" stroke-width="2" marker-end="url(#ar)"/>
+          <line x1="130" y1="118" x2="690" y2="118" stroke="#6c7884" stroke-width="2"/>
+          <line x1="130" y1="118" x2="130" y2="146" stroke="#6c7884" stroke-width="2" marker-end="url(#ar)"/>
+          <line x1="410" y1="118" x2="410" y2="146" stroke="#6c7884" stroke-width="2" marker-end="url(#ar)"/>
+          <line x1="690" y1="118" x2="690" y2="146" stroke="#6c7884" stroke-width="2" marker-end="url(#ar)"/>
+          <rect class="rs" data-r="1" x="34" y="148" width="192" height="100" rx="14" fill="#fff" stroke="#1d6fb8" stroke-width="2"/>
+          <text x="130" y="180" text-anchor="middle" font-size="15" font-weight="700" fill="#1d6fb8">Unit I</text>
+          <text x="130" y="204" text-anchor="middle" font-size="13.5" fill="#3c4a58">Why a DBMS?</text>
+          <text x="130" y="226" text-anchor="middle" font-size="11.5" fill="#6c7884">architecture &amp; independence</text>
+          <rect class="rs" data-r="2" x="314" y="148" width="192" height="100" rx="14" fill="#fff" stroke="#0f766e" stroke-width="2"/>
+          <text x="410" y="180" text-anchor="middle" font-size="15" font-weight="700" fill="#0f766e">Unit II</text>
+          <text x="410" y="204" text-anchor="middle" font-size="13.5" fill="#3c4a58">How to design it?</text>
+          <text x="410" y="226" text-anchor="middle" font-size="11.5" fill="#6c7884">ER modelling</text>
+          <rect class="rs" data-r="3" x="594" y="148" width="192" height="100" rx="14" fill="#fff" stroke="#c2410c" stroke-width="2"/>
+          <text x="690" y="180" text-anchor="middle" font-size="15" font-weight="700" fill="#c2410c">Unit IV</text>
+          <text x="690" y="204" text-anchor="middle" font-size="13.5" fill="#3c4a58">How to query it?</text>
+          <text x="690" y="226" text-anchor="middle" font-size="11.5" fill="#6c7884">tables, algebra &amp; SQL</text>
+          <line x1="130" y1="248" x2="130" y2="278" stroke="#6c7884" stroke-width="2"/>
+          <line x1="690" y1="248" x2="690" y2="278" stroke="#6c7884" stroke-width="2"/>
+          <line x1="130" y1="278" x2="690" y2="278" stroke="#6c7884" stroke-width="2"/>
+          <line x1="410" y1="278" x2="410" y2="306" stroke="#6c7884" stroke-width="2" marker-end="url(#ar)"/>
+          <rect class="rs" data-r="4" x="230" y="308" width="360" height="46" rx="14" fill="#1e3a5f"/>
+          <text x="410" y="336" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Working database — Students · Courses · Marks</text>
+        </svg>
+      </div>
+      <div class="panel" id="roadPanel">Tap a stage above to see its one-line job.</div>
+    </div>
+  </section>
+
+  <!-- ================= UNIT I ================= -->
+  <div class="unitbar u1c" id="u1"><span class="tag">Unit I</span><h2>Introduction to DBMS</h2><p>Database approach · characteristics · data models · architecture · data independence</p></div>
+
+  <section>
+    <div class="sec-head"><span class="num">2</span><h2>What is a DBMS? — watch a query run</h2></div>
+    <div class="card">
+      <p class="lead">A DBMS is software that creates, stores, organises, retrieves and manages data. Press <b>Run</b> and follow one request as it travels from the user to the database and back.</p>
+      <div class="stage">
+        <div class="flowstage" id="flowstage">
+          <div class="pkt" id="pkt" style="top:8px"></div>
+          <div class="node" id="nd0" style="top:0"><b>User</b><small>asks for Nitin's marks</small></div>
+          <div class="node" id="nd1" style="top:110px"><b>DBMS software</b><small>processes the request, checks access</small></div>
+          <div class="node" id="nd2" style="top:220px"><b>Database</b><small>stores the student records</small></div>
+        </div>
+        <div class="status" id="flowStatus">Ready.</div>
+        <div class="controls"><button class="btn primary" id="flowRun">▶ Run query</button></div>
+      </div>
+      <div class="callout note"><b>Mental model</b>The database holds the books; the DBMS is the librarian who decides how to store, find, update and protect them.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">3</span><h2>Database vs DBMS — and the characteristics</h2></div>
+    <div class="card">
+      <div class="grid2">
+        <div class="tile" style="cursor:default"><h4 style="color:var(--u1)">Database</h4><p class="muted" style="margin:6px 0 0">A collection of organised data. <b>Example:</b> student records. It <i>contains</i> the information.</p></div>
+        <div class="tile" style="cursor:default"><h4 style="color:var(--u2)">DBMS</h4><p class="muted" style="margin:6px 0 0">Software that manages the data. <b>Example:</b> MySQL. It <i>provides operations</i> on the information.</p></div>
+      </div>
+      <h4>Characteristics of the database approach — tap to open</h4>
+      <div id="chars"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">4</span><h2>File system vs DBMS — flip the switch</h2></div>
+    <div class="card">
+      <p class="lead">Same college, two worlds. Toggle to compare what happens when a student's phone number changes.</p>
+      <div class="controls"><button class="btn active" data-fs="file">File system</button><button class="btn" data-fs="dbms">DBMS</button></div>
+      <div class="panel fade" id="fsPanel"></div>
+      <div class="callout trap"><b>Exam tip</b>Do not claim a DBMS eliminates every problem — it manages many of them. Humans can still design spectacularly bad databases.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">5</span><h2>Data models — click each one</h2></div>
+    <div class="card">
+      <p class="lead">A data model describes how data is structured and how its elements relate. Tap a model to see its shape.</p>
+      <div class="grid4" id="dmGrid">
+        <div class="tile" data-dm="hier"><h4>Hierarchical</h4><div class="sub">tree structure</div></div>
+        <div class="tile" data-dm="net"><h4>Network</h4><div class="sub">linked records</div></div>
+        <div class="tile" data-dm="rel"><h4>Relational</h4><div class="sub">tables &amp; rows</div></div>
+        <div class="tile" data-dm="oo"><h4>Object-oriented</h4><div class="sub">objects &amp; classes</div></div>
+      </div>
+      <div class="panel" id="dmPanel">Pick a model to see its diagram and a one-line description.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">6</span><h2>Three-schema architecture — change a layer and see what moves</h2></div>
+    <div class="card">
+      <p class="lead">This is a favourite Section-B question. Click a level to inspect it, then trigger a change and watch which layers stay safe.</p>
+      <div class="stage">
+        <div class="cap">Click a level · then choose what changes</div>
+        <svg class="d" id="arch" viewBox="0 0 720 380" role="img" aria-label="Three-schema architecture">
+          <defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#1d6fb8"/></marker>
+          <marker id="a1g" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0f766e"/></marker></defs>
+          <rect class="lv" data-lv="0" x="180" y="20" width="360" height="80" rx="14" fill="#e8f1fb" stroke="#1d6fb8" stroke-width="2"/>
+          <text x="360" y="46" text-anchor="middle" class="m" font-size="11" fill="#1d6fb8" letter-spacing="1">EXTERNAL · VIEW LEVEL</text>
+          <text x="360" y="72" text-anchor="middle" font-size="16" font-weight="700" fill="#16202b">External Schema</text>
+          <text x="360" y="91" text-anchor="middle" font-size="12.5" fill="#3c4a58">what each user is allowed to see</text>
+          <rect class="lv" data-lv="1" x="180" y="160" width="360" height="80" rx="14" fill="#e1f1ec" stroke="#0f766e" stroke-width="2"/>
+          <text x="360" y="186" text-anchor="middle" class="m" font-size="11" fill="#0f766e" letter-spacing="1">CONCEPTUAL · LOGICAL LEVEL</text>
+          <text x="360" y="212" text-anchor="middle" font-size="16" font-weight="700" fill="#16202b">Conceptual Schema</text>
+          <text x="360" y="231" text-anchor="middle" font-size="12.5" fill="#3c4a58">overall logical structure of the database</text>
+          <rect class="lv" data-lv="2" x="180" y="300" width="360" height="80" rx="14" fill="#fbe8de" stroke="#c2410c" stroke-width="2"/>
+          <text x="360" y="326" text-anchor="middle" class="m" font-size="11" fill="#c2410c" letter-spacing="1">INTERNAL · PHYSICAL LEVEL</text>
+          <text x="360" y="352" text-anchor="middle" font-size="16" font-weight="700" fill="#16202b">Internal Schema</text>
+          <text x="360" y="371" text-anchor="middle" font-size="12.5" fill="#3c4a58">how data is physically stored</text>
+          <line x1="360" y1="160" x2="360" y2="104" stroke="#1d6fb8" stroke-width="2.5" marker-end="url(#a1)"/>
+          <text x="374" y="136" class="m" font-size="11" fill="#1d6fb8">LOGICAL INDEPENDENCE</text>
+          <line x1="360" y1="300" x2="360" y2="244" stroke="#0f766e" stroke-width="2.5" marker-end="url(#a1g)"/>
+          <text x="374" y="276" class="m" font-size="11" fill="#0f766e">PHYSICAL INDEPENDENCE</text>
+        </svg>
+      </div>
+      <div class="controls">
+        <button class="btn" data-ch="phys">🔧 Change storage (add an index)</button>
+        <button class="btn" data-ch="log">🧩 Change structure (add an attribute)</button>
+        <button class="btn sm" data-ch="reset">Reset</button>
+      </div>
+      <div class="panel" id="archPanel">Click a level in the diagram, or trigger a change above.</div>
+    </div>
+  </section>
+
+  <!-- ================= UNIT II ================= -->
+  <div class="unitbar u2c" id="u2"><span class="tag">Unit II</span><h2>E-R Modeling</h2><p>Entities · attributes · keys · relationships · cardinality · weak entities · specialisation &amp; generalisation</p></div>
+
+  <section>
+    <div class="sec-head"><span class="num">7</span><h2>Entity, entity type, entity set — click an entity</h2></div>
+    <div class="card">
+      <p class="lead">Click any student below. Its attributes light up, showing that attributes belong to the entity type while the instances belong to the entity set.</p>
+      <div class="stage">
+        <svg class="d wide" id="ent" viewBox="0 0 760 300" role="img" aria-label="Entity type STUDENT with instances and attributes">
+          <defs><marker id="ae" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0f766e"/></marker></defs>
+          <rect x="300" y="18" width="160" height="46" rx="10" fill="#e1f1ec" stroke="#0f766e" stroke-width="2"/>
+          <text x="380" y="46" text-anchor="middle" font-size="15" font-weight="700" fill="#0f766e">STUDENT</text>
+          <text x="474" y="44" text-anchor="start" class="m" font-size="10.5" fill="#6c7884">entity type (the category)</text>
+          <line x1="340" y1="64" x2="150" y2="126" stroke="#0f766e" stroke-width="1.5" marker-end="url(#ae)"/>
+          <line x1="380" y1="64" x2="380" y2="126" stroke="#0f766e" stroke-width="1.5" marker-end="url(#ae)"/>
+          <line x1="420" y1="64" x2="610" y2="126" stroke="#0f766e" stroke-width="1.5" marker-end="url(#ae)"/>
+          <rect class="inst" data-i="0" x="100" y="128" width="100" height="40" rx="9" fill="#fff" stroke="#0f766e" stroke-width="1.7" style="cursor:pointer"/><text x="150" y="153" text-anchor="middle" font-size="13.5" fill="#16202b" pointer-events="none">Nitin</text>
+          <rect class="inst" data-i="1" x="330" y="128" width="100" height="40" rx="9" fill="#fff" stroke="#0f766e" stroke-width="1.7" style="cursor:pointer"/><text x="380" y="153" text-anchor="middle" font-size="13.5" fill="#16202b" pointer-events="none">Asha</text>
+          <rect class="inst" data-i="2" x="560" y="128" width="100" height="40" rx="9" fill="#fff" stroke="#0f766e" stroke-width="1.7" style="cursor:pointer"/><text x="610" y="153" text-anchor="middle" font-size="13.5" fill="#16202b" pointer-events="none">Ravi</text>
+          <text x="380" y="192" text-anchor="middle" class="m" font-size="10.5" fill="#6c7884">each is an entity — together they form the entity set</text>
+          <ellipse class="attr" x="0" cx="150" cy="252" rx="58" ry="25" fill="#fff" stroke="#1d6fb8" stroke-width="1.7"/><text x="150" y="257" text-anchor="middle" font-size="12.5" fill="#1d6fb8" pointer-events="none">Student_ID</text>
+          <ellipse class="attr" cx="330" cy="252" rx="46" ry="25" fill="#fff" stroke="#1d6fb8" stroke-width="1.7"/><text x="330" y="257" text-anchor="middle" font-size="12.5" fill="#1d6fb8" pointer-events="none">Name</text>
+          <ellipse class="attr" cx="500" cy="252" rx="42" ry="25" fill="#fff" stroke="#1d6fb8" stroke-width="1.7"/><text x="500" y="257" text-anchor="middle" font-size="12.5" fill="#1d6fb8" pointer-events="none">Age</text>
+          <ellipse class="attr" cx="640" cy="252" rx="52" ry="25" fill="#fff" stroke="#1d6fb8" stroke-width="1.7"/><text x="640" y="257" text-anchor="middle" font-size="12.5" fill="#1d6fb8" pointer-events="none">Course</text>
+          <line x1="150" y1="168" x2="150" y2="227" stroke="#1d6fb8" stroke-width="1.4"/>
+          <line x1="380" y1="168" x2="330" y2="227" stroke="#1d6fb8" stroke-width="1.4"/>
+          <line x1="380" y1="168" x2="500" y2="227" stroke="#1d6fb8" stroke-width="1.4"/>
+          <line x1="610" y1="168" x2="640" y2="227" stroke="#1d6fb8" stroke-width="1.4"/>
+        </svg>
+      </div>
+      <div class="panel" id="entPanel">Click an entity (Nitin / Asha / Ravi).</div>
+      <div class="callout trap"><b>Exam trap</b>An <b>entity</b> is one instance; an <b>entity type</b> is the category; an <b>entity set</b> is the collection of instances.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">8</span><h2>Attribute types — switch the symbol</h2></div>
+    <div class="card">
+      <p class="lead">Each attribute type has its own ER symbol. Pick a type and watch the symbol draw itself.</p>
+      <div class="controls" id="attrBtns">
+        <button class="btn active" data-at="simple">Simple</button>
+        <button class="btn" data-at="composite">Composite</button>
+        <button class="btn" data-at="multi">Multivalued</button>
+        <button class="btn" data-at="derived">Derived</button>
+        <button class="btn" data-at="key">Key</button>
+      </div>
+      <div class="stage" style="min-height:200px">
+        <svg class="d" id="attrSym" viewBox="0 0 560 180" role="img" aria-label="Attribute symbol"></svg>
+      </div>
+      <div class="panel" id="attrPanel"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">9</span><h2>Keys — hover the columns</h2></div>
+    <div class="card">
+      <p class="lead">Hover or tap a column header to see whether it can be a super key, a candidate key, or the primary key.</p>
+      <div class="tw"><table class="hl" id="keyTbl">
+        <thead><tr><th class="kcell" data-c="0">Student_ID</th><th class="kcell" data-c="1">Aadhaar</th><th class="kcell" data-c="2">Name</th><th class="kcell" data-c="3">Dept</th></tr></thead>
+        <tbody>
+          <tr><td>101</td><td>1111-2222</td><td>Nitin</td><td>IT</td></tr>
+          <tr><td>102</td><td>3333-4444</td><td>Nitin</td><td>CS</td></tr>
+          <tr><td>103</td><td>5555-6666</td><td>Asha</td><td>IT</td></tr>
+        </tbody>
+      </table></div>
+      <div class="panel" id="keyPanel">Hover a column header above.</div>
+      <div class="callout mem"><b>Key chain</b>Super key ⊇ candidate key ⊇ primary key. A foreign key points at another table's key.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">10</span><h2>Relationships — change the cardinality</h2></div>
+    <div class="card">
+      <p class="lead">Cardinality says how many entities can be associated. Switch between the three kinds and watch the notation change.</p>
+      <div class="controls"><button class="btn active" data-card="1:1">1 : 1</button><button class="btn" data-card="1:N">1 : N</button><button class="btn" data-card="M:N">M : N</button></div>
+      <div class="stage" style="min-height:180px"><svg class="d" id="cardSvg" viewBox="0 0 620 170" role="img" aria-label="Cardinality notation"></svg></div>
+      <div class="panel" id="cardPanel"></div>
+      <div class="callout trap"><b>Do not confuse</b><b style="display:inline;font-family:inherit;text-transform:none;letter-spacing:0;color:inherit">Degree</b> counts participating entity types; <b style="display:inline;font-family:inherit;text-transform:none;letter-spacing:0;color:inherit">cardinality</b> says how many entities can be associated.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">11</span><h2>Weak entity &amp; EER — two animated ideas</h2></div>
+    <div class="card">
+      <h4>A weak entity needs an owner</h4>
+      <div class="stage">
+        <svg class="d wide" id="weak" viewBox="0 0 820 190" role="img" aria-label="Weak entity dependent on employee">
+          <defs><marker id="aw" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0f766e"/></marker></defs>
+          <rect x="40" y="66" width="150" height="52" rx="9" fill="#fff" stroke="#0f766e" stroke-width="2"/><rect x="47" y="73" width="136" height="38" rx="6" fill="none" stroke="#0f766e" stroke-width="1.2"/>
+          <text x="115" y="97" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0f766e">EMPLOYEE</text>
+          <text x="115" y="140" text-anchor="middle" class="m" font-size="10.5" fill="#6c7884">owner entity</text>
+          <line x1="190" y1="92" x2="290" y2="92" stroke="#6c7884" stroke-width="1.6"/>
+          <polygon points="300,92 345,64 390,92 345,120" fill="#fbe8de" stroke="#c2410c" stroke-width="2"/><polygon points="313,92 345,72 377,92 345,112" fill="none" stroke="#c2410c" stroke-width="1.1"/>
+          <text x="345" y="96" text-anchor="middle" font-size="10" fill="#c2410c">HAS_DEPENDENT</text>
+          <text x="345" y="146" text-anchor="middle" class="m" font-size="10.5" fill="#6c7884">identifying relationship</text>
+          <line x1="390" y1="92" x2="490" y2="92" stroke="#6c7884" stroke-width="1.6" marker-end="url(#aw)"/>
+          <rect x="494" y="66" width="160" height="52" rx="9" fill="#fff" stroke="#c2410c" stroke-width="2"/><rect x="501" y="73" width="146" height="38" rx="6" fill="none" stroke="#c2410c" stroke-width="1.2"/>
+          <text x="574" y="97" text-anchor="middle" font-size="13.5" font-weight="700" fill="#c2410c">DEPENDENT</text>
+          <text x="574" y="140" text-anchor="middle" class="m" font-size="10.5" fill="#6c7884">weak entity (double rectangle)</text>
+          <text x="410" y="178" text-anchor="middle" class="m" font-size="11" fill="#3c4a58">identified by Employee_ID + Dependent_Name (partial key)</text>
+        </svg>
+      </div>
+      <h4>Specialisation (top-down) vs generalisation (bottom-up)</h4>
+      <div class="controls"><button class="btn active" data-eer="spec">Specialisation ↓</button><button class="btn" data-eer="gen">Generalisation ↑</button></div>
+      <div class="stage" style="min-height:250px"><svg class="d" id="eer" viewBox="0 0 700 250" role="img" aria-label="EER inheritance"></svg></div>
+      <div class="panel" id="eerPanel"></div>
+    </div>
+  </section>
+
+  <!-- ================= UNIT IV ================= -->
+  <div class="unitbar u4c" id="u4"><span class="tag">Unit IV</span><h2>Relational Data Model &amp; SQL</h2><p>Tables · constraints · relational algebra · SQL queries · joins · aggregates</p></div>
+
+  <section>
+    <div class="sec-head"><span class="num">12</span><h2>Relational model — count degree &amp; cardinality</h2></div>
+    <div class="card">
+      <p class="lead">Click a column header to count <b>degree</b>, and a row to count <b>cardinality</b>.</p>
+      <div class="tw"><table class="hl" id="relTbl">
+        <thead><tr><th class="kcell" data-h="c">Student_ID</th><th class="kcell" data-h="c">Name</th><th class="kcell" data-h="c">Age</th><th class="kcell" data-h="c">Course_ID</th></tr></thead>
+        <tbody>
+          <tr class="kcell" data-h="r"><td>101</td><td>Nitin</td><td>22</td><td>C01</td></tr>
+          <tr class="kcell" data-h="r"><td>102</td><td>Asha</td><td>21</td><td>C02</td></tr>
+          <tr class="kcell" data-h="r"><td>103</td><td>Ravi</td><td>20</td><td>C01</td></tr>
+        </tbody>
+      </table></div>
+      <div class="panel" id="relPanel">Degree = number of columns. Cardinality = number of rows. (This table: degree 4, cardinality 3.)</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">13</span><h2>Relational constraints — try an insert</h2></div>
+    <div class="card">
+      <p class="lead">Pick a row to insert into <code class="inl">STUDENT(Student_ID PK, Name, Course_ID FK→COURSE)</code>. Existing COURSE keys: <b>C01, C02</b>. See whether the constraint allows it.</p>
+      <div class="controls" id="insBtns">
+        <button class="btn" data-ins="ok">Insert (104, Meena, C01)</button>
+        <button class="btn" data-ins="dup">Insert (101, Ravi, C02)</button>
+        <button class="btn" data-ins="null">Insert (NULL, Sia, C01)</button>
+        <button class="btn" data-ins="fk">Insert (105, Dev, C99)</button>
+      </div>
+      <div class="panel" id="insPanel">Choose an insert above.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">14</span><h2>Relational algebra — run an operation</h2></div>
+    <div class="card">
+      <p class="lead">Pick an operation and see it applied to the sample tables. This is the theory behind SQL.</p>
+      <div class="grid2">
+        <div class="tw"><table><thead><tr><th colspan="3">STUDENT</th></tr><tr><th>ID</th><th>Name</th><th>Dept</th></tr></thead><tbody>
+          <tr><td>1</td><td>Nitin</td><td>IT</td></tr><tr><td>2</td><td>Asha</td><td>CS</td></tr><tr><td>3</td><td>Ravi</td><td>IT</td></tr></tbody></table></div>
+        <div class="tw"><table><thead><tr><th colspan="3">TOPPER</th></tr><tr><th>ID</th><th>Name</th><th>Dept</th></tr></thead><tbody>
+          <tr><td>1</td><td>Nitin</td><td>IT</td></tr><tr><td>4</td><td>Meena</td><td>CS</td></tr></tbody></table></div>
+      </div>
+      <div class="controls" id="raBtns">
+        <button class="btn active" data-ra="sel">σ Selection</button>
+        <button class="btn" data-ra="proj">π Projection</button>
+        <button class="btn" data-ra="uni">∪ Union</button>
+        <button class="btn" data-ra="diff">− Difference</button>
+        <button class="btn" data-ra="inter">∩ Intersection</button>
+        <button class="btn" data-ra="prod">× Cartesian</button>
+        <button class="btn" data-ra="join">⋈ Join</button>
+      </div>
+      <div class="panel" id="raPanel"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">15</span><h2>SQL — run a query, see the rows</h2></div>
+    <div class="card">
+      <p class="lead">Pick a query; the result table updates.</p>
+      <div class="controls" id="sqlBtns">
+        <button class="btn active" data-sql="all">SELECT *</button>
+        <button class="btn" data-sql="where">WHERE Course_ID='C01'</button>
+        <button class="btn" data-sql="order">ORDER BY Name</button>
+        <button class="btn" data-sql="count">COUNT(*) GROUP BY</button>
+        <button class="btn" data-sql="having">HAVING COUNT(*)>1</button>
+      </div>
+      <pre id="sqlCode"></pre>
+      <div class="panel" id="sqlPanel"></div>
+      <div class="callout trap"><b>Be careful</b>Without <code class="inl">WHERE</code>, an <code class="inl">UPDATE</code> changes every row and a <code class="inl">DELETE</code> removes every row.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">16</span><h2>SQL JOINs — switch the join</h2></div>
+    <div class="card">
+      <p class="lead">STUDENT joins COURSE on Course_ID. Watch the result change with the join type.</p>
+      <div class="controls"><button class="btn active" data-j="inner">INNER</button><button class="btn" data-j="left">LEFT</button><button class="btn" data-j="right">RIGHT</button><button class="btn" data-j="cross">CROSS</button></div>
+      <div class="panel" id="joinPanel"></div>
+      <div class="callout trap"><b>Classic exam question</b>An INNER JOIN returns only matching rows — it drops unmatched rows; a LEFT or RIGHT join keeps them with NULLs.</div>
+    </div>
+  </section>
+
+  <!-- CHECKLIST -->
+  <section id="checklist">
+    <div class="sec-head"><span class="num">17</span><h2>Your revision checklist</h2></div>
+    <div class="card">
+      <p class="muted">Tick each item when you can <b>explain it, draw it, and give an example</b>. Progress saves on this device.</p>
+      <div class="pbar"><i id="clBar"></i></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="muted" id="clCount">0 of 0 done</span>
+        <button class="btn sm" id="clReset">Reset checklist</button>
+      </div>
+      <div id="clBody"></div>
+    </div>
+  </section>
+
+  <!-- EXAM -->
+  <section id="exam">
+    <div class="sec-head"><span class="num">18</span><h2>Your exact exam format</h2></div>
+    <div class="card">
+      <div class="grid2">
+        <div class="tile" style="cursor:default"><h4 style="color:var(--u1)">Section A</h4><div class="sub">10 MCQs × 1 mark</div><p><b style="font-family:'Space Grotesk';font-size:22px">10 marks</b></p></div>
+        <div class="tile" style="cursor:default"><h4 style="color:var(--u4)">Section B</h4><div class="sub">any 2 of 4 × 7.5 marks</div><p><b style="font-family:'Space Grotesk';font-size:22px">15 marks</b></p></div>
+      </div>
+      <h4>The 5-step answer template for a 7.5-mark question</h4>
+      <div class="grid3">
+        <div class="tile" style="cursor:default"><h4>1 · Definition</h4></div>
+        <div class="tile" style="cursor:default"><h4>2 · Diagram</h4></div>
+        <div class="tile" style="cursor:default"><h4>3 · Explain each part</h4></div>
+        <div class="tile" style="cursor:default"><h4>4 · Example</h4></div>
+        <div class="tile" style="cursor:default"><h4>5 · Compare / conclude</h4></div>
+        <div class="tile" style="cursor:default;background:var(--goodbg)"><h4 style="color:var(--good)">Aim ≈ 200 words</h4></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz">
+    <div class="sec-head"><span class="num">19</span><h2>Test yourself — 10 MCQs</h2></div>
+    <div class="card">
+      <div class="scorebox" id="scorebox"><span class="muted">0 / 10 answered</span></div>
+      <div id="quizwrap"></div>
+      <div style="text-align:center;margin-top:12px"><button class="btn primary" id="qretry">Retry quiz</button></div>
+    </div>
+  </section>
+
+  <!-- PAPERS -->
+  <section id="papers">
+    <div class="sec-head"><span class="num">20</span><h2>Predicted papers — practise on pen and paper</h2></div>
+    <div class="card">
+      <p class="lead">Three full predicted papers in your exact format (Section A 10×1, Section B 2 of 4 ×7.5, 25 marks, 1 hour), plus an answer key with a suggested marking scheme. Download and print them — attempt one closed-book, then mark it yourself.</p>
+      <div class="grid3">
+        <div class="tile" style="cursor:default"><h4>Paper 1</h4><div class="sub">architecture · ER diagram · keys · algebra</div></div>
+        <div class="tile" style="cursor:default"><h4>Paper 2</h4><div class="sub">DBMS vs file system · attributes · spec/gen · set operators</div></div>
+        <div class="tile" style="cursor:default"><h4>Paper 3</h4><div class="sub">data models · weak entity · constraints · aggregates</div></div>
+      </div>
+      <div class="callout note"><b>How to use them</b>Sit one paper in 60 minutes with no notes, then open the Answer Key PDF and mark it. Re-sit the paper you scored lowest on tomorrow morning.</div>
+    </div>
+  </section>
+
+  <section id="plan">
+    <div class="sec-head"><span class="num">21</span><h2>Tonight's plan</h2></div>
+    <div class="card">
+      <div class="grid4">
+        <div class="tile" style="cursor:default"><h4>45 min</h4><div class="sub">Unit I</div><p class="muted" style="margin:6px 0 0">Architecture, data independence, characteristics. Draw the three levels from memory.</p></div>
+        <div class="tile" style="cursor:default"><h4>60 min</h4><div class="sub">Unit II</div><p class="muted" style="margin:6px 0 0">ER diagrams, keys, attributes, cardinality, weak entities, EER.</p></div>
+        <div class="tile" style="cursor:default"><h4>60 min</h4><div class="sub">Unit IV</div><p class="muted" style="margin:6px 0 0">Constraints, algebra symbols, and write SQL yourself — WHERE, GROUP BY, HAVING, joins.</p></div>
+        <div class="tile" style="cursor:default"><h4>30 min</h4><div class="sub">Closed book</div><p class="muted" style="margin:6px 0 0">Sit a predicted paper, then mark it. Fix mistakes before sleeping.</p></div>
+      </div>
+      <div class="callout tip"><b>One last rule</b>Get some sleep — a few hours of alert recall beats exhausted rereading.</div>
+    </div>
+  </section>
+
+  <p class="foot">Built from your BCA-501 syllabus and the Dec-2023/2024/2025 papers. Diagrams, examples and predicted papers are study material — not official question papers or a marking scheme.</p>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ---------- roadmap ---------- */
+const ROAD=["The goal: one college management system that stores students, courses, teachers and marks.",
+"The foundation — why a DBMS exists, its architecture and data independence.",
+"The design — modelling the real world as entities, attributes and relationships.",
+"The implementation — turning the design into tables and querying them with algebra and SQL.",
+"The result — a working database you can query."];
+document.querySelectorAll("#roadmap .rs").forEach(el=>{
+  el.style.cursor="pointer";
+  el.addEventListener("click",()=>{
+    $("roadPanel").innerHTML="<b>"+ROAD[+el.dataset.r]+"</b>";
+    $("roadPanel").classList.remove("fade");void $("roadPanel").offsetWidth;$("roadPanel").classList.add("fade");
+  });
+});
+
+/* ---------- request flow ---------- */
+const NODES=["nd0","nd1","nd2"];
+const STEPS=["User sends the request…","DBMS software processes it and checks access…","Database reads the student records…","Marks returned to the user ✓"];
+let flowBusy=false;
+$("flowRun").addEventListener("click",()=>{
+  if(flowBusy)return;flowBusy=true;
+  const pkt=$("pkt");const st=$("flowStatus");
+  NODES.forEach(n=>$(n).classList.remove("act"));
+  pkt.style.transition="top .8s cubic-bezier(.5,0,.4,1)";
+  const seq=[
+    {t:8,node:0,msg:STEPS[0]},
+    {t:118,node:1,msg:STEPS[1]},
+    {t:228,node:2,msg:STEPS[2]},
+    {t:118,node:1,msg:"DBMS formats the answer…"},
+    {t:8,node:0,msg:STEPS[3]}
+  ];
+  let i=0;
+  const step=()=>{
+    if(i>=seq.length){flowBusy=false;return;}
+    const s=seq[i];
+    pkt.style.top=s.t+"px";
+    NODES.forEach(n=>$(n).classList.remove("act"));$(NODES[s.node]).classList.add("act");
+    st.textContent=s.msg;
+    i++;setTimeout(step,850);
+  };
+  step();
+});
+
+/* ---------- characteristics ---------- */
+const CHARS=[
+ ["Self-describing nature","The system stores metadata — information about the data itself. Example: Student_ID is an integer, Name is text."],
+ ["Program-data independence","Changing how data is stored should not force every application program to be rewritten."],
+ ["Data abstraction","Users work with data without knowing every internal storage detail."],
+ ["Multiple views","Different users see different portions of the same database — students see marks, teachers can update them."],
+ ["Data sharing &amp; multi-user processing","Many users access the database while the DBMS keeps the data consistent."],
+ ["Plus: controlled redundancy, security, integrity, backup &amp; recovery","These are extra points worth listing in a long answer."]
+];
+const chars=$("chars");
+CHARS.forEach((c,i)=>{
+  const d=document.createElement("div");d.className="cl";d.style.cursor="pointer";
+  d.innerHTML='<div class="bx">+</div><div><b>'+c[0]+'</b><div class="muted" style="display:none">'+c[1]+'</div></div>';
+  d.addEventListener("click",()=>{
+    const m=d.querySelector(".muted"),bx=d.querySelector(".bx");
+    const open=m.style.display==="none";
+    m.style.display=open?"block":"none";bx.textContent=open?"–":"+";d.classList.toggle("on",open);
+  });
+  chars.appendChild(d);
+});
+
+/* ---------- file system vs dbms ---------- */
+const FS={
+ file:["File system","<b>Data duplicated across files.</b> The fees file, the attendance file and the marks file each hold a copy. When a student changes their phone number and one file is missed, the college now has <b>conflicting data</b> (inconsistency). Security is handled file-by-file, and recovery is manual."],
+ dbms:["DBMS","<b>Centralised and controlled.</b> The phone number is stored once; every view reads the same value, so it stays <b>consistent</b>. Access is controlled centrally, many users can work at once, and the DBMS provides backup and recovery."]
+};
+function fsRender(k){
+  const d=FS[k];
+  $("fsPanel").innerHTML="<b>"+d[0]+":</b> "+d[1];
+  $("fsPanel").classList.remove("fade");void $("fsPanel").offsetWidth;$("fsPanel").classList.add("fade");
+  document.querySelectorAll("[data-fs]").forEach(b=>b.classList.toggle("active",b.dataset.fs===k));
+}
+document.querySelectorAll("[data-fs]").forEach(b=>b.addEventListener("click",()=>fsRender(b.dataset.fs)));
+fsRender("file");
+
+/* ---------- data models ---------- */
+const DM={
+ hier:{t:"Hierarchical",d:"Tree structure — each child has exactly one parent. Example: College → Dept → Student.",svg:'<svg viewBox="0 0 300 150" style="width:100%;height:auto"><g stroke="#1d6fb8" stroke-width="1.5" fill="none"><line x1="150" y1="36" x2="90" y2="78"/><line x1="150" y1="36" x2="210" y2="78"/><line x1="90" y1="98" x2="60" y2="130"/><line x1="90" y1="98" x2="120" y2="130"/></g><rect x="115" y="14" width="70" height="24" rx="6" fill="#e8f1fb" stroke="#1d6fb8" stroke-width="1.5"/><text x="150" y="30" text-anchor="middle" font-size="11" fill="#1d6fb8">College</text><rect x="55" y="76" width="70" height="24" rx="6" fill="#fff" stroke="#1d6fb8" stroke-width="1.5"/><text x="90" y="92" text-anchor="middle" font-size="11" fill="#1d6fb8">Dept A</text><rect x="175" y="76" width="70" height="24" rx="6" fill="#fff" stroke="#1d6fb8" stroke-width="1.5"/><text x="210" y="92" text-anchor="middle" font-size="11" fill="#1d6fb8">Dept B</text><rect x="35" y="128" width="50" height="20" rx="5" fill="#fff" stroke="#1d6fb8" stroke-width="1.3"/><text x="60" y="142" text-anchor="middle" font-size="10" fill="#1d6fb8">S1</text><rect x="95" y="128" width="50" height="20" rx="5" fill="#fff" stroke="#1d6fb8" stroke-width="1.3"/><text x="120" y="142" text-anchor="middle" font-size="10" fill="#1d6fb8">S2</text></svg>'},
+ net:{t:"Network",d:"Linked records — a child may have several parents, forming a graph.",svg:'<svg viewBox="0 0 300 150" style="width:100%;height:auto"><g stroke="#0f766e" stroke-width="1.5"><line x1="150" y1="75" x2="70" y2="40"/><line x1="150" y1="75" x2="230" y2="40"/><line x1="150" y1="75" x2="70" y2="110"/><line x1="150" y1="75" x2="230" y2="110"/></g><polygon points="150,58 168,75 150,92 132,75" fill="#3c4a58"/><circle cx="70" cy="40" r="17" fill="#fff" stroke="#0f766e" stroke-width="1.5"/><text x="70" y="45" text-anchor="middle" font-size="11" fill="#0f766e">A</text><circle cx="230" cy="40" r="17" fill="#fff" stroke="#0f766e" stroke-width="1.5"/><text x="230" y="45" text-anchor="middle" font-size="11" fill="#0f766e">B</text><circle cx="70" cy="110" r="17" fill="#fff" stroke="#0f766e" stroke-width="1.5"/><text x="70" y="115" text-anchor="middle" font-size="11" fill="#0f766e">C</text><circle cx="230" cy="110" r="17" fill="#fff" stroke="#0f766e" stroke-width="1.5"/><text x="230" y="115" text-anchor="middle" font-size="11" fill="#0f766e">D</text></svg>'},
+ rel:{t:"Relational",d:"Data stored in tables (relations) of rows and columns — the model SQL is built on.",svg:'<svg viewBox="0 0 300 150" style="width:100%;height:auto"><rect x="40" y="34" width="220" height="82" rx="6" fill="#fff" stroke="#1d6fb8" stroke-width="1.5"/><line x1="40" y1="60" x2="260" y2="60" stroke="#1d6fb8" stroke-width="1.3"/><line x1="113" y1="34" x2="113" y2="116" stroke="#1d6fb8" stroke-width="1"/><line x1="186" y1="34" x2="186" y2="116" stroke="#1d6fb8" stroke-width="1"/><line x1="40" y1="88" x2="260" y2="88" stroke="#1d6fb8" stroke-width="1"/><text x="76" y="52" text-anchor="middle" font-size="11" font-weight="600" fill="#1d6fb8">ID</text><text x="150" y="52" text-anchor="middle" font-size="11" font-weight="600" fill="#1d6fb8">Name</text><text x="223" y="52" text-anchor="middle" font-size="11" font-weight="600" fill="#1d6fb8">Age</text><text x="76" y="79" text-anchor="middle" font-size="10.5" fill="#3c4a58">101</text><text x="150" y="79" text-anchor="middle" font-size="10.5" fill="#3c4a58">Nitin</text><text x="223" y="79" text-anchor="middle" font-size="10.5" fill="#3c4a58">22</text><text x="76" y="107" text-anchor="middle" font-size="10.5" fill="#3c4a58">102</text><text x="150" y="107" text-anchor="middle" font-size="10.5" fill="#3c4a58">Asha</text><text x="223" y="107" text-anchor="middle" font-size="10.5" fill="#3c4a58">21</text></svg>'},
+ oo:{t:"Object-oriented",d:"Data stored as objects with attributes and methods.",svg:'<svg viewBox="0 0 300 150" style="width:100%;height:auto"><rect x="60" y="24" width="180" height="100" rx="6" fill="#fff" stroke="#0f766e" stroke-width="1.5"/><line x1="60" y1="52" x2="240" y2="52" stroke="#0f766e" stroke-width="1.2"/><text x="150" y="43" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0f766e">Student object</text><text x="74" y="74" font-size="11" fill="#3c4a58">ID = 101</text><text x="74" y="92" font-size="11" fill="#3c4a58">Name = Asha</text><text x="74" y="112" font-size="11" fill="#0f766e" font-family="JetBrains Mono, monospace">showMarks()</text></svg>'}
+};
+document.querySelectorAll("[data-dm]").forEach(t=>t.addEventListener("click",()=>{
+  document.querySelectorAll("[data-dm]").forEach(x=>x.classList.remove("on"));t.classList.add("on");
+  const d=DM[t.dataset.dm];
+  $("dmPanel").innerHTML="<b>"+d.t+":</b> "+d.d+"<div style='max-width:320px;margin-top:8px'>"+d.svg+"</div>";
+  $("dmPanel").classList.remove("fade");void $("dmPanel").offsetWidth;$("dmPanel").classList.add("fade");
+}));
+
+/* ---------- three-schema ---------- */
+const LV=[
+ "External level (view level) — the part of the database a particular user is allowed to see.",
+ "Conceptual level (logical level) — what data exists and how it is related across the whole database.",
+ "Internal level (physical level) — how the data is physically stored: files, indexes, access paths."
+];
+const lvRects=document.querySelectorAll("#arch .lv");
+lvRects.forEach(el=>{el.style.cursor="pointer";el.addEventListener("click",()=>{
+  lvRects.forEach(x=>x.setAttribute("opacity","1"));lvRects.forEach(x=>{if(x!==el)x.setAttribute("opacity",".45");});
+  $("archPanel").innerHTML="<b>"+LV[+el.dataset.lv]+"</b>";
+});});
+function archChange(kind){
+  const reset=()=>{lvRects.forEach((x,i)=>{x.setAttribute("opacity","1");x.setAttribute("stroke-width","2");
+    x.setAttribute("stroke",["#1d6fb8","#0f766e","#c2410c"][i]);});};
+  reset();
+  if(kind==="phys"){
+    lvRects[2].setAttribute("stroke","#b02a37");lvRects[2].setAttribute("stroke-width","4");
+    $("archPanel").innerHTML="<b>Physical data independence.</b> You change the <b>internal</b> schema (add an index, change file organisation). The conceptual and external schemas stay safe — applications keep working. This is the easier kind to achieve.";
+  }else if(kind==="log"){
+    lvRects[1].setAttribute("stroke","#b02a37");lvRects[1].setAttribute("stroke-width","4");
+    $("archPanel").innerHTML="<b>Logical data independence.</b> You change the <b>conceptual</b> schema (add an attribute). The external views and application programs can stay unchanged — harder to achieve than physical independence.";
+  }else{
+    $("archPanel").innerHTML="Reset. Click a level in the diagram, or trigger a change above.";
+  }
+}
+document.querySelectorAll("[data-ch]").forEach(b=>b.addEventListener("click",()=>archChange(b.dataset.ch)));
+
+/* ---------- entity highlight ---------- */
+const ATTRS=["Student_ID","Name","Age","Course"];
+document.querySelectorAll("#ent .inst").forEach(el=>el.addEventListener("click",()=>{
+  document.querySelectorAll("#ent .inst").forEach(x=>x.setAttribute("fill","#fff"));
+  el.setAttribute("fill","#e1f1ec");
+  const nm=el.querySelector("text").textContent;
+  document.querySelectorAll("#ent .attr").forEach(a=>a.setAttribute("fill","#e8f1fb"));
+  $("entPanel").innerHTML="<b>Entity:</b> "+nm+" — an instance of the entity type STUDENT. Its attributes (highlighted) are <b>"+ATTRS.join(", ")+"</b>. All three instances together form the <b>entity set</b>.";
+}));
+
+/* ---------- attribute symbols ---------- */
+function attrSVG(type){
+  const base='<ellipse cx="280" cy="90" rx="80" ry="34" fill="#fff" stroke="#1d6fb8" stroke-width="2"/>';
+  const txt='<text x="280" y="96" text-anchor="middle" font-size="16" fill="#1d6fb8">Name</text>';
+  let extra="",label="";
+  if(type==="simple"){label="Simple attribute — cannot be divided further. Example: Age.";}
+  if(type==="composite"){extra='<line x1="280" y1="124" x2="180" y2="150" stroke="#1d6fb8" stroke-width="1.6"/><line x1="280" y1="124" x2="280" y2="150" stroke="#1d6fb8" stroke-width="1.6"/><line x1="280" y1="124" x2="380" y2="150" stroke="#1d6fb8" stroke-width="1.6"/><ellipse cx="180" cy="160" rx="42" ry="16" fill="#fff" stroke="#1d6fb8" stroke-width="1.3"/><text x="180" y="165" text-anchor="middle" font-size="11" fill="#1d6fb8">First</text><ellipse cx="280" cy="160" rx="42" ry="16" fill="#fff" stroke="#1d6fb8" stroke-width="1.3"/><text x="280" y="165" text-anchor="middle" font-size="11" fill="#1d6fb8">Middle</text><ellipse cx="380" cy="160" rx="42" ry="16" fill="#fff" stroke="#1d6fb8" stroke-width="1.3"/><text x="380" y="165" text-anchor="middle" font-size="11" fill="#1d6fb8">Last</text>';label="Composite attribute — divides into components, e.g. Name → First, Middle, Last.";}
+  if(type==="multi"){extra='<ellipse cx="280" cy="90" rx="68" ry="26" fill="none" stroke="#1d6fb8" stroke-width="1.4"/>';label="Multivalued attribute — several values for one entity, e.g. Phone numbers. Drawn as a double ellipse.";}
+  if(type==="derived"){label="Derived attribute — computed from other attributes, e.g. Age from Date_of_Birth. Drawn as a dashed ellipse.";return '<ellipse cx="280" cy="90" rx="80" ry="34" fill="#fff" stroke="#1d6fb8" stroke-width="2" stroke-dasharray="7 5"/><text x="280" y="96" text-anchor="middle" font-size="16" fill="#1d6fb8">Age</text>';}
+  if(type==="key"){label="Key attribute — uniquely identifies an entity, e.g. Student_ID. Drawn underlined.";return '<ellipse cx="280" cy="90" rx="80" ry="34" fill="#fff" stroke="#1d6fb8" stroke-width="2"/><text x="280" y="96" text-anchor="middle" font-size="16" fill="#1d6fb8" text-decoration="underline">Student_ID</text>';}
+  return base+txt+extra;
+}
+function renderAttr(type){
+  $("attrSym").innerHTML=attrSVG(type);
+  const labels={simple:"Simple attribute — cannot be divided further. Example: Age.",composite:"Composite attribute — divides into components, e.g. Name → First, Middle, Last.",multi:"Multivalued attribute — several values for one entity, e.g. Phone numbers (double ellipse).",derived:"Derived attribute — computed from another attribute, e.g. Age from Date_of_Birth (dashed ellipse).",key:"Key attribute — uniquely identifies an entity, e.g. Student_ID (underlined)."};
+  $("attrPanel").innerHTML="<b>"+labels[type]+"</b>";
+  document.querySelectorAll("[data-at]").forEach(b=>b.classList.toggle("active",b.dataset.at===type));
+}
+document.querySelectorAll("[data-at]").forEach(b=>b.addEventListener("click",()=>renderAttr(b.dataset.at)));
+renderAttr("simple");
+
+/* ---------- keys ---------- */
+const KEYINFO={
+ 0:["Student_ID","<b>Super key ✓ · Candidate key ✓ · Primary key ✓.</b> Student_ID is unique for every row and minimal, so it is a candidate key — and the natural choice for the primary key."],
+ 1:["Aadhaar","<b>Super key ✓ · Candidate key ✓ · Primary key ✗.</b> Aadhaar is also unique and minimal, so it is a candidate key. It is not chosen as primary, which makes it an <b>alternate key</b>."],
+ 2:["Name","<b>Super key ✗.</b> Two students are called Nitin, so Name alone cannot identify a row. It could appear inside a larger super key, e.g. {Name, Dept}."],
+ 3:["Dept","<b>Super key ✗.</b> Many students share a department. Not unique — so not a key on its own."]
+};
+document.querySelectorAll("#keyTbl th.kcell").forEach(th=>{
+  const fn=()=>{const k=th.dataset.c;$("keyPanel").innerHTML="<b>"+KEYINFO[k][0]+":</b> "+KEYINFO[k][1];
+    document.querySelectorAll("#keyTbl th").forEach(x=>x.classList.remove("cellkey"));th.classList.add("cellkey");};
+  th.addEventListener("mouseenter",fn);th.addEventListener("click",fn);
+});
+
+/* ---------- cardinality ---------- */
+const CARD={
+ "1:1":{d:"One-to-one — one person has one passport and each passport belongs to one person.",a:"1",b:"1",la:"Person",lb:"Passport"},
+ "1:N":{d:"One-to-many — one department has many employees, but each employee belongs to one department.",a:"1",b:"N",la:"Dept",lb:"Employee"},
+ "M:N":{d:"Many-to-many — many students enrol in many courses.",a:"M",b:"N",la:"Student",lb:"Course"}
+};
+function renderCard(k){
+  const c=CARD[k];
+  $("cardSvg").innerHTML='<defs><marker id="ac" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#6c7884"/></marker></defs>'+
+    '<rect x="70" y="55" width="150" height="50" rx="10" fill="#e1f1ec" stroke="#0f766e" stroke-width="2"/><text x="145" y="86" text-anchor="middle" font-size="14" font-weight="700" fill="#0f766e">'+c.la+'</text>'+
+    '<rect x="400" y="55" width="150" height="50" rx="10" fill="#e1f1ec" stroke="#0f766e" stroke-width="2"/><text x="475" y="86" text-anchor="middle" font-size="14" font-weight="700" fill="#0f766e">'+c.lb+'</text>'+
+    '<line x1="220" y1="80" x2="400" y2="80" stroke="#6c7884" stroke-width="2" marker-end="url(#ac)"/>'+
+    '<text x="290" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#1d6fb8">'+c.a+'</text>'+
+    '<text x="350" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#1d6fb8">'+c.b+'</text>'+
+    '<text x="310" y="104" text-anchor="middle" font-size="11" fill="#6c7884">relationship</text>';
+  $("cardPanel").innerHTML="<b>"+k+":</b> "+c.d;
+  document.querySelectorAll("[data-card]").forEach(b=>b.classList.toggle("active",b.dataset.card===k));
+}
+document.querySelectorAll("[data-card]").forEach(b=>b.addEventListener("click",()=>renderCard(b.dataset.card)));
+renderCard("1:1");
+
+/* ---------- EER ---------- */
+function renderEER(k){
+  const up=k==="gen";
+  const pTop=up?"244":"22", sTop=up?"22":"244";
+  const arrow=up?1:0;
+  $("eer").innerHTML='<defs><marker id="aeer" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0f766e"/></marker></defs>'+
+   '<rect x="250" y="'+pTop+'" width="200" height="52" rx="12" fill="#e1f1ec" stroke="#0f766e" stroke-width="2"/><text x="350" y="'+(+pTop+32)+'" text-anchor="middle" font-size="15" font-weight="700" fill="#0f766e">PERSON</text>'+
+   '<rect x="70" y="'+sTop+'" width="200" height="52" rx="12" fill="#fff" stroke="#1d6fb8" stroke-width="2"/><text x="170" y="'+(+sTop+32)+'" text-anchor="middle" font-size="14" font-weight="700" fill="#1d6fb8">STUDENT</text>'+
+   '<rect x="430" y="'+sTop+'" width="200" height="52" rx="12" fill="#fff" stroke="#c2410c" stroke-width="2"/><text x="530" y="'+(+sTop+32)+'" text-anchor="middle" font-size="14" font-weight="700" fill="#c2410c">TEACHER</text>'+
+   '<polygon points="350,'+(up?150:110)+' 383,'+(up?136:136)+' 350,'+(up?122:162)+' 317,'+(up?136:136)+'" fill="#fff" stroke="#0f766e" stroke-width="1.8"/><text x="350" y="'+(up?140:141)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#0f766e">ISA</text>'+
+   '<line x1="350" y1="'+(up?244:74)+'" x2="350" y2="'+(up?164:100)+'" stroke="#0f766e" stroke-width="1.8" marker-end="url(#aeer)"/>'+
+   '<line x1="170" y1="'+(up?108:244)+'" x2="300" y2="'+(up?118:118)+'" stroke="#0f766e" stroke-width="1.6"/>'+
+   '<line x1="530" y1="'+(up?108:244)+'" x2="400" y2="'+(up?118:118)+'" stroke="#0f766e" stroke-width="1.6"/>';
+  $("eerPanel").innerHTML=up?
+    "<b>Generalisation (bottom-up):</b> STUDENT and TEACHER share common properties, so we combine them into the superclass PERSON. Subclasses inherit PERSON's attributes."
+    :"<b>Specialisation (top-down):</b> the superclass PERSON is divided into more specific subclasses STUDENT and TEACHER, based on distinguishing characteristics.";
+  document.querySelectorAll("[data-eer]").forEach(b=>b.classList.toggle("active",b.dataset.eer===k));
+}
+document.querySelectorAll("[data-eer]").forEach(b=>b.addEventListener("click",()=>renderEER(b.dataset.eer)));
+renderEER("spec");
+
+/* ---------- relational model counting ---------- */
+document.querySelectorAll("#relTbl [data-h]").forEach(el=>el.addEventListener("click",()=>{
+  if(el.dataset.h==="c"){$("relPanel").innerHTML="<b>Degree = 4.</b> Degree is the number of attributes (columns) in the relation.";}
+  else{$("relPanel").innerHTML="<b>Cardinality = 3.</b> Cardinality is the number of tuples (rows). (Not the same as relationship cardinality in ER modelling!)";}
+}));
+
+/* ---------- constraints ---------- */
+const INS={
+ ok:{ok:true,t:"(104, Meena, C01)",d:"Accepted. 104 is a new, non-NULL primary key; C01 exists in COURSE, so the foreign key is valid. All constraints satisfied."},
+ dup:{ok:false,t:"(101, Ravi, C02)",d:"Rejected — <b>key constraint</b>. 101 already exists as a primary key; a key must uniquely identify each tuple."},
+ null:{ok:false,t:"(NULL, Sia, C01)",d:"Rejected — <b>entity integrity</b>. A primary key cannot be NULL."},
+ fk:{ok:false,t:"(105, Dev, C99)",d:"Rejected — <b>referential integrity</b>. C99 does not exist in COURSE, so the foreign key cannot reference it."}
+};
+document.querySelectorAll("[data-ins]").forEach(b=>b.addEventListener("click",()=>{
+  const r=INS[b.dataset.ins];
+  $("insPanel").innerHTML='<b style="color:'+(r.ok?"#157347":"#b02a37")+'">'+(r.ok?"✓ ":"✗ ")+"Insert "+r.t+"</b> — "+r.d;
+  $("insPanel").classList.remove("fade");void $("insPanel").offsetWidth;$("insPanel").classList.add("fade");
+}));
+
+/* ---------- relational algebra ---------- */
+const R=[{ID:1,Name:"Nitin",Dept:"IT"},{ID:2,Name:"Asha",Dept:"CS"},{ID:3,Name:"Ravi",Dept:"IT"}];
+const S=[{ID:1,Name:"Nitin",Dept:"IT"},{ID:4,Name:"Meena",Dept:"CS"}];
+function tbl(cols,rows){
+  let h='<div class="tw"><table><thead><tr>'+cols.map(c=>"<th>"+c+"</th>").join("")+'</tr></thead><tbody>';
+  h+=rows.map(r=>"<tr>"+r.map(v=>"<td>"+v+"</td>").join("")+"</tr>").join("");
+  return h+"</tbody></table></div>";
+}
+const RA={
+ sel:()=>({t:"σ Dept='IT' (STUDENT)",h:tbl(["ID","Name","Dept"],R.filter(r=>r.Dept==="IT").map(r=>[r.ID,r.Name,r.Dept]))+"<p class='muted'>Selection keeps only the rows that satisfy the condition — here the IT students.</p>"}),
+ proj:()=>({t:"π Name (STUDENT)",h:tbl(["Name"],R.map(r=>[r.Name]))+"<p class='muted'>Projection keeps only the named column.</p>"}),
+ uni:()=>({t:"STUDENT ∪ TOPPER",h:tbl(["ID","Name","Dept"],dedupe([...R,...S]).map(r=>[r.ID,r.Name,r.Dept]))+"<p class='muted'>Union combines both relations and removes duplicates (needs union-compatible relations).</p>"}),
+ diff:()=>({t:"STUDENT − TOPPER",h:tbl(["ID","Name","Dept"],R.filter(r=>!S.some(s=>s.ID===r.ID)).map(r=>[r.ID,r.Name,r.Dept]))+"<p class='muted'>Difference keeps rows in the first relation that are absent from the second.</p>"}),
+ inter:()=>({t:"STUDENT ∩ TOPPER",h:tbl(["ID","Name","Dept"],R.filter(r=>S.some(s=>s.ID===r.ID)).map(r=>[r.ID,r.Name,r.Dept]))+"<p class='muted'>Intersection keeps rows common to both.</p>"}),
+ prod:()=>({t:"STUDENT × TOPPER",h:tbl(["S.ID","S.Name","T.ID","T.Name"],R.flatMap(a=>S.map(b=>[a.ID,a.Name,b.ID,b.Name])))+"<p class='muted'>Cartesian product pairs every row of the first with every row of the second (3 × 2 = 6 rows).</p>"}),
+ join:()=>({t:"STUDENT ⋈ TOPPER (on ID)",h:tbl(["ID","Name","Dept"],R.filter(r=>S.some(s=>s.ID===r.ID)).map(r=>[r.ID,r.Name,r.Dept]))+"<p class='muted'>Join keeps only the rows whose IDs match — here ID 1 (Nitin).</p>"})
+};
+function dedupe(a){const m=new Map();a.forEach(r=>m.set(r.ID,r));return [...m.values()];}
+function renderRA(k){
+  const r=RA[k]();
+  $("raPanel").innerHTML="<b>"+r.t+"</b>"+r.h;
+  $("raPanel").classList.remove("fade");void $("raPanel").offsetWidth;$("raPanel").classList.add("fade");
+  document.querySelectorAll("[data-ra]").forEach(b=>b.classList.toggle("active",b.dataset.ra===k));
+}
+document.querySelectorAll("[data-ra]").forEach(b=>b.addEventListener("click",()=>renderRA(b.dataset.ra)));
+renderRA("sel");
+
+/* ---------- SQL runner ---------- */
+const SDATA=[{Student_ID:101,Name:"Nitin",Course_ID:"C01"},{Student_ID:102,Name:"Asha",Course_ID:"C02"},{Student_ID:103,Name:"Ravi",Course_ID:"C01"}];
+const SQLQ={
+ all:{code:'SELECT *\nFROM Student;',h:tbl(["Student_ID","Name","Course_ID"],SDATA.map(r=>[r.Student_ID,r.Name,r.Course_ID]))},
+ where:{code:"SELECT *\nFROM Student\nWHERE Course_ID = 'C01';",h:tbl(["Student_ID","Name","Course_ID"],SDATA.filter(r=>r.Course_ID==="C01").map(r=>[r.Student_ID,r.Name,r.Course_ID]))},
+ order:{code:"SELECT *\nFROM Student\nORDER BY Name ASC;",h:tbl(["Student_ID","Name","Course_ID"],[...SDATA].sort((a,b)=>a.Name.localeCompare(b.Name)).map(r=>[r.Student_ID,r.Name,r.Course_ID]))},
+ count:{code:"SELECT Course_ID, COUNT(*) AS Total\nFROM Student\nGROUP BY Course_ID;",h:tbl(["Course_ID","Total"],[["C01",2],["C02",1]])},
+ having:{code:"SELECT Course_ID, COUNT(*) AS Total\nFROM Student\nGROUP BY Course_ID\nHAVING COUNT(*) > 1;",h:tbl(["Course_ID","Total"],[["C01",2]])+"<p class='muted'>HAVING filters the groups after grouping — only courses with more than one student survive.</p>"}
+};
+function renderSQL(k){
+  $("sqlCode").textContent=SQLQ[k].code;
+  $("sqlPanel").innerHTML=SQLQ[k].h;
+  $("sqlPanel").classList.remove("fade");void $("sqlPanel").offsetWidth;$("sqlPanel").classList.add("fade");
+  document.querySelectorAll("[data-sql]").forEach(b=>b.classList.toggle("active",b.dataset.sql===k));
+}
+document.querySelectorAll("[data-sql]").forEach(b=>b.addEventListener("click",()=>renderSQL(b.dataset.sql)));
+renderSQL("all");
+
+/* ---------- joins ---------- */
+const STD=[{id:101,name:"Nitin",c:"C01"},{id:102,name:"Asha",c:"C02"},{id:103,name:"Ravi",c:"C01"}];
+const CRS={C01:"BCA",C02:"BBA"};
+const JQ={
+ inner:{code:"INNER JOIN — only matching rows",rows:STD.map(r=>[r.id,r.name,CRS[r.c]])},
+ left:{code:"LEFT JOIN — all left rows + matches (NULL if none)",rows:STD.map(r=>[r.id,r.name,r.c in CRS?CRS[r.c]:"NULL"])},
+ right:{code:"RIGHT JOIN — all right rows + matches",rows:[["101","Nitin","BCA"],["103","Ravi","BCA"],["102","Asha","BBA"]]},
+ cross:{code:"CROSS JOIN — every combination",rows:STD.flatMap(r=>Object.entries(CRS).map(([k,v])=>[r.id,r.name,v]))}
+};
+function renderJoin(k){
+  $("joinPanel").innerHTML="<b>"+JQ[k].code+"</b>"+tbl(["Student_ID","Name","Course_Name"],JQ[k].rows);
+  $("joinPanel").classList.remove("fade");void $("joinPanel").offsetWidth;$("joinPanel").classList.add("fade");
+  document.querySelectorAll("[data-j]").forEach(b=>b.classList.toggle("active",b.dataset.j===k));
+}
+document.querySelectorAll("[data-j]").forEach(b=>b.addEventListener("click",()=>renderJoin(b.dataset.j)));
+renderJoin("inner");
+
+/* ---------- checklist ---------- */
+const CHECK=[
+ ["Unit I — foundation",[
+   "Explain what a DBMS is and give three examples.",
+   "List the characteristics of the database approach (metadata, program-data independence, abstraction, multiple views, sharing).",
+   "Compare a file system with a DBMS in a table.",
+   "Describe the four data models with a small diagram each.",
+   "Draw the three-schema architecture from memory and label each level.",
+   "Explain logical vs physical data independence with an example."
+ ]],
+ ["Unit II — diagrams",[
+   "Define entity, entity type, entity set and attribute with an example.",
+   "List the types of attributes and their ER symbols.",
+   "Explain super key, candidate key, primary key, alternate key and foreign key.",
+   "Explain degree and cardinality (1:1, 1:N, M:N) with examples.",
+   "Draw a weak entity with its identifying relationship.",
+   "Explain specialisation vs generalisation with an example.",
+   "List the constraints on specialisation (disjoint, overlapping, total, partial)."
+ ]],
+ ["Unit IV — queries",[
+   "Define relation, tuple, attribute, domain, degree and cardinality.",
+   "Explain the four relational constraints with an example each.",
+   "List the relational algebra operations with their symbols.",
+   "Write a SQL CREATE, INSERT, SELECT, UPDATE and DELETE statement.",
+   "Explain UNION, MINUS and INTERSECT with examples.",
+   "Explain INNER / LEFT / RIGHT / CROSS joins and when to use each.",
+   "Use COUNT, SUM, AVG, MIN, MAX with GROUP BY and HAVING."
+ ]],
+ ["Exam craft",[
+   "Write a full 7.5-mark answer using the 5-step template.",
+   "Draw two diagrams from memory in under five minutes.",
+   "Sit one predicted paper closed-book in 60 minutes.",
+   "Mark your paper against the answer key and list your mistakes."
+ ]]
+];
+const CLK="dbms-lab-check";let clDone={};
+try{clDone=JSON.parse(localStorage.getItem(CLK))||{};}catch(e){clDone={};}
+let clTotal=0;
+const clBody=$("clBody");
+CHECK.forEach((g,gi)=>{
+  const wrap=document.createElement("div");wrap.className="clgroup";
+  wrap.innerHTML="<h4>"+g[0]+"</h4>";
+  g[1].forEach((item,ii)=>{
+    clTotal++;
+    const id=gi+"-"+ii;
+    const d=document.createElement("div");d.className="cl"+(clDone[id]?" on":"");
+    d.innerHTML='<div class="bx">'+(clDone[id]?"✓":"")+'</div><div>'+item+'</div>';
+    d.addEventListener("click",()=>{clDone[id]=!clDone[id];try{localStorage.setItem(CLK,JSON.stringify(clDone));}catch(e){}
+      d.classList.toggle("on",clDone[id]);d.querySelector(".bx").textContent=clDone[id]?"✓":"";clUpdate();});
+    wrap.appendChild(d);
+  });
+  clBody.appendChild(wrap);
+});
+function clUpdate(){
+  const n=Object.values(clDone).filter(Boolean).length;
+  $("clBar").style.width=(n/clTotal*100)+"%";
+  $("clCount").textContent=n+" of "+clTotal+" done";
+}
+$("clReset").addEventListener("click",()=>{clDone={};try{localStorage.setItem(CLK,"{}");}catch(e){}
+  document.querySelectorAll("#clBody .cl").forEach(d=>{d.classList.remove("on");d.querySelector(".bx").textContent="";});clUpdate();});
+clUpdate();
+
+/* ---------- quiz ---------- */
+const QUIZ=[
+ ["Which level describes physical storage details?",["External","Conceptual","Internal","View"],2,"The internal (physical) level describes how data is stored."],
+ ["Which data independence concerns changes to storage?",["Logical","Physical","External","Relational"],1,"Physical data independence separates storage changes from the conceptual schema."],
+ ["Which attribute can hold multiple values for one entity?",["Simple","Derived","Multivalued","Key"],2,"A multivalued attribute holds several values, e.g. phone numbers."],
+ ["Which key is the minimal form of a super key?",["Foreign key","Candidate key","Alternate key","Partial key"],1,"A candidate key uniquely identifies a tuple with no unnecessary attributes."],
+ ["Many students, many courses — the cardinality is:",["1:1","1:N","M:N","Unary"],2,"Many-to-many."],
+ ["A weak entity is drawn as a:",["Single oval","Diamond","Double rectangle","Dashed oval"],2,"Double rectangle."],
+ ["Which relational algebra operation selects rows?",["Projection","Selection","Union","Cartesian product"],1,"Selection (σ) filters rows by a condition."],
+ ["Degree of a relation with 5 columns?",["5","Number of rows","1","Unknown"],0,"Degree = number of attributes."],
+ ["Which constraint stops a primary key being NULL?",["Domain integrity","Referential integrity","Entity integrity","Join integrity"],2,"Entity integrity."],
+ ["Which JOIN returns only matching rows from both tables?",["LEFT JOIN","CROSS JOIN","INNER JOIN","RIGHT JOIN"],2,"INNER JOIN."]
+];
+let qans=0,qc=0;
+function buildQuiz(){
+  qans=0;qc=0;$("quizwrap").innerHTML="";
+  QUIZ.forEach((q,i)=>{
+    const b=document.createElement("div");b.className="q";
+    b.innerHTML='<div class="qn">QUESTION '+(i+1)+'</div><div class="qt">'+q[0]+'</div><div class="opts">'+
+      q[1].map((o,j)=>'<button class="opt" data-q="'+i+'" data-o="'+j+'"><span class="k">'+"ABCD"[j]+'</span><span>'+o+'</span></button>').join("")+
+      '</div><div class="qfb" id="fb'+i+'"></div>';
+    $("quizwrap").appendChild(b);
+  });
+  $("quizwrap").querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>pick(+b.dataset.q,+b.dataset.o)));
+  updateScore();
+}
+function pick(qi,oi){
+  const box=$("quizwrap").children[qi];if(box.dataset.done)return;box.dataset.done="1";qans++;
+  const cor=QUIZ[qi][2],opts=box.querySelectorAll(".opt");
+  opts.forEach((o,j)=>{o.classList.add("lock");if(j===cor)o.classList.add("ok");else if(j===oi)o.classList.add("no");});
+  const fb=$("fb"+qi);
+  if(oi===cor){qc++;fb.className="qfb on ok";fb.innerHTML="<b>Correct.</b> "+QUIZ[qi][3];}
+  else{fb.className="qfb on no";fb.innerHTML="<b>Correct answer: "+QUIZ[qi][1][cor]+".</b> "+QUIZ[qi][3];}
+  updateScore();
+}
+function updateScore(){
+  const sb=$("scorebox");
+  if(qans<QUIZ.length){sb.innerHTML='<span class="muted">'+qans+' / '+QUIZ.length+' answered</span>';}
+  else{const pct=Math.round(qc/QUIZ.length*100);
+    sb.innerHTML='<div class="big" style="color:'+(pct>=70?"#157347":pct>=40?"#a9761c":"#b02a37")+'">'+qc+'/'+QUIZ.length+'</div><p class="muted" style="margin:6px 0 0">'+(pct>=70?"Strong. Review any misses, then move on.":"Review the incorrect answers, then retry.")+'</p>';}
+}
+$("qretry").addEventListener("click",buildQuiz);
+buildQuiz();
+</script>
+</body>
+</html>
